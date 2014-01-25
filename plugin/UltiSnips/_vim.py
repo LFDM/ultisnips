@@ -187,11 +187,19 @@ def select(start, end):
         else:
             do_select = "0" if inclusive else "0l"
 
+        # Patched by LFDM
+        # "uc replaces <C-g>, which usually triggers select mode.
+        # We avoid this and copy the placeholder text to register u.
+        # Makes it possible to retain the default paste buffer when using
+        # snippets, but also destroys nested snippets.
         move_cmd += _LangMapTranslator().translate(
-            r"%sv%s%s\<c-g>" % (move_one_right, move_lines, do_select)
+            r"%sv%s%s\"uc" % (move_one_right, move_lines, do_select)
         )
 
     feedkeys(move_cmd)
+    # Patched by LFDM - notify what we hold in register u, so that we know
+    # what we could insert back.
+    feedkeys(r"\<esc>\:echo 'register u contains: ' . @u\<cr>a")
 
 # Helper functions  {{{
 def _calc_end(lines, start):
